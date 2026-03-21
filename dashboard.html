@@ -746,7 +746,7 @@ let ruolo=localStorage.getItem('ruolo');
 let username=localStorage.getItem('username');
 let allComp=[];
 
-if(!token){window.location.href='login.html'}
+if(!token){window.location.href='index.html'}
 
 // ═══════ INIT ═══════
 function init(){
@@ -1111,7 +1111,7 @@ function toast(msg,type='success'){
   setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300)},3500);
 }
 
-function logout(){localStorage.clear();window.location.href='login.html'}
+function logout(){localStorage.clear();window.location.href='index.html'}
 
 init();
 </script>
