@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FermiStock — Richiesta Accesso</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+:root {
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --blue: #2563eb; --cyan-bright: #06b6d4;
+  --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+  --brand-gradient: linear-gradient(135deg, var(--cyan-bright), var(--blue));
+  --text-dark: #0f172a; --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 24px 48px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-main); background: #f8fafc; color: var(--text-dark); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+.mesh-bg { position: fixed; inset: 0; z-index: 0; background-color: #f1f5f9; overflow: hidden; }
+.mesh-blob { position: absolute; border-radius: 50%; filter: blur(120px); mix-blend-mode: multiply; opacity: 0.6; animation: drift 20s infinite alternate ease-in-out; }
+.blob-1 { width: 60vw; height: 60vw; background: #cffafe; top: -10vw; left: -10vw; }
+.blob-2 { width: 50vw; height: 50vw; background: #e0f2fe; bottom: -10vw; right: -10vw; animation-delay: -5s; }
+@keyframes drift { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10vw, 5vh) scale(1.1); } }
+.resistor { position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0.25; will-change: transform; z-index: 1; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; height: 76px; padding: 0 42px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(24px) saturate(150%); background: rgba(255, 255, 255, 0.75); border-bottom: 1px solid var(--glass-border); z-index: 100; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--text-dark); letter-spacing: -0.5px; }
+.brand img { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #fff; object-fit: cover; }
+.brand span { color: var(--blue); }
+.nav-back { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); text-decoration: none; padding: 8px 16px; border-radius: 12px; background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border); transition: 0.2s; }
+.nav-back:hover { background: #fff; color: var(--text-dark); transform: translateX(-2px); }
+
+.register-wrapper { position: relative; z-index: 10; flex: 1; display: flex; align-items: center; justify-content: center; padding: 100px 20px 40px; }
+.register-bento { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 1050px; background: var(--glass-bg); backdrop-filter: blur(24px) saturate(150%); border: 1px solid var(--glass-border); border-radius: 32px; box-shadow: var(--glass-shadow); overflow: hidden; animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.register-left { padding: 56px; background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2)); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; justify-content: center; }
+.badge-left { display: inline-flex; align-items: center; gap: 8px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.2); color: var(--cyan-bright); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 20px; margin-bottom: 24px; width: fit-content; }
+.left-title { font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px; }
+.left-title span { background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.left-desc { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 40px; font-weight: 500; }
+
+.process-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 20px; }
+.p-step { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.p-num { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.8); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--text-muted); flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.p-num.done { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+.p-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text-dark); }
+.p-sub { font-size: 13px; color: var(--text-muted); line-height: 1.4; font-weight: 500; }
+
+.register-right { padding: 56px; display: flex; flex-direction: column; justify-content: center; }
+.form-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+.form-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; font-weight: 500; line-height: 1.5; }
+
+.input-group { margin-bottom: 20px; position: relative; }
+.input-label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.input-icon { position: absolute; left: 16px; bottom: 14px; color: var(--text-muted); pointer-events: none; width: 18px; height: 18px; }
+.input-control { width: 100%; padding: 14px 16px 14px 44px; background: rgba(255,255,255,0.8); border: 2px solid transparent; border-radius: 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-dark); outline: none; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.input-control:focus { background: #fff; border-color: var(--blue); box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
+
+/* PASSWORD STRENGTH METER */
+.strength-meter { margin-top: 8px; display: flex; gap: 4px; height: 4px; border-radius: 2px; overflow: hidden; background: rgba(0,0,0,0.05); }
+.strength-seg { flex: 1; transition: 0.3s; background: transparent; }
+.strength-text { font-size: 11px; font-weight: 700; text-align: right; margin-top: 4px; color: var(--text-muted); transition: 0.2s; }
+.s-weak .s1 { background: var(--danger); }
+.s-med .s1, .s-med .s2 { background: var(--warning); }
+.s-strong .s1, .s-strong .s2, .s-strong .s3 { background: var(--success); }
+
+.btn-submit { width: 100%; padding: 16px; margin-top: 8px; background: var(--brand-gradient); border: none; border-radius: 16px; color: #fff; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(14,165,233,0.2); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.3); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.error-box { display: none; align-items: center; gap: 10px; margin-top: 20px; padding: 14px 16px; background: var(--danger-light); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; color: #991b1b; font-size: 13px; font-weight: 600; }
+.error-box.show { display: flex; }
+
+.success-wrap { display: none; text-align: center; animation: fadeUp 0.5s; }
+.success-wrap.show { display: block; }
+.sc-icon { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 24px; background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: var(--success); }
+
+@media(max-width: 768px) { .register-bento { grid-template-columns: 1fr; } .register-left { display: none; } }
+</style>
+</head>
+
+<body>
+
+<div class="mesh-bg">
+  <div class="mesh-blob blob-1"></div><div class="mesh-blob blob-2"></div>
+</div>
+<div id="resistors-container"></div>
+
+<nav>
+  <a class="brand" href="index.html"><img src="logo.jpg" alt="Fermi"> Fermi<span>Stock</span></a>
+  <a href="index.html" class="nav-back"><i data-lucide="arrow-left"></i> Torna alla Home</a>
+</nav>
+
+<div class="register-wrapper">
+  <div class="register-bento">
+
+    <div class="register-left">
+      <div class="badge-left"><i data-lucide="user-plus" style="width:14px;height:14px;"></i> Nuovo Profilo Docente</div>
+      <h1 class="left-title">Richiedi<br><span>Accesso</span></h1>
+      <p class="left-desc">Invia i tuoi dati al sistema. Per ragioni di sicurezza, i nuovi account docenti devono essere preventivamente approvati dallo Staff tecnico o dall'Admin.</p>
+
+      <div class="process-label">Iter di attivazione</div>
+      <div class="p-step"><div class="p-num">1</div><div><div class="p-title">Compila il modulo</div><div class="p-sub">Scegli username e crea una password sicura.</div></div></div>
+      <div class="p-step"><div class="p-num">2</div><div><div class="p-title">Revisione sistema</div><div class="p-sub">Richiesta inviata in coda di approvazione.</div></div></div>
+      <div class="p-step"><div class="p-num done"><i data-lucide="check" style="width:16px;"></i></div><div><div class="p-title">Piattaforma attiva</div><div class="p-sub">L'amministratore sblocca il profilo per il login.</div></div></div>
+    </div>
+
+    <div class="register-right">
+      <div id="formWrap">
+        <h2 class="form-title">Modulo di Registrazione</h2>
+        <p class="form-subtitle">Crea le tue credenziali. Assicurati che la password sia sicura.</p>
+
+        <div class="input-group">
+          <label class="input-label">Nome Utente</label>
+          <i data-lucide="user" class="input-icon"></i>
+          <input type="text" id="ru" class="input-control" placeholder="es. prof_rossi">
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Email Istituzionale</label>
+          <i data-lucide="mail" class="input-icon"></i>
+          <input type="email" id="re" class="input-control" placeholder="nome@istituto.it">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 28px;">
+          <label class="input-label">Password Personale</label>
+          <i data-lucide="lock" class="input-icon"></i>
+          <input type="password" id="rp" class="input-control" placeholder="Scegli password" oninput="evalStrength(this.value)">
+          <div class="strength-meter" id="s-meter">
+            <div class="strength-seg s1"></div><div class="strength-seg s2"></div><div class="strength-seg s3"></div>
+          </div>
+          <div class="strength-text" id="s-text">Inizia a digitare...</div>
+        </div>
+
+        <button class="btn-submit" id="regBtn" onclick="registra()" disabled>
+          <span class="btn-text">Invia Candidatura</span>
+          <i data-lucide="send" style="width:18px;"></i>
+        </button>
+
+        <div class="error-box" id="errBox"><i data-lucide="alert-circle"></i><span id="errTxt"></span></div>
+
+        <div style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+          Hai già un account? <a href="login-prof.html" style="color: var(--blue); text-decoration: none;">Accedi qui</a>
+        </div>
+      </div>
+
+      <div id="successWrap" class="success-wrap">
+        <div class="sc-icon"><i data-lucide="check-check" style="width:40px;height:40px;"></i></div>
+        <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 8px;">Richiesta Ricevuta!</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 500;">Il tuo account è stato creato ed è in attesa di sblocco manuale da parte dell'Admin.</p>
+        <a href="index.html" class="btn-submit" style="display:inline-flex; width:auto; padding: 14px 32px; text-decoration:none;"><i data-lucide="home"></i> Torna alla Home</a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+const API = "http://127.0.0.1:5000";
+let isPwdValid = false;
+
+// VALUTATORE DI SICUREZZA PASSWORD
+function evalStrength(pwd) {
+    const meter = document.getElementById('s-meter');
+    const text = document.getElementById('s-text');
+    const btn = document.getElementById('regBtn');
+
+    meter.className = 'strength-meter'; // reset
+    isPwdValid = false;
+    btn.disabled = true;
+
+    if (!pwd) { text.textContent = 'Inizia a digitare...'; text.style.color = 'var(--text-muted)'; return; }
+
+    let strength = 0;
+    if (pwd.length >= 8) strength += 1;
+    if (pwd.match(/[A-Z]/) && pwd.match(/[0-9]/)) strength += 1;
+    if (pwd.match(/[^A-Za-z0-9]/)) strength += 1;
+
+    if (strength === 0 || pwd.length < 6) {
+        meter.classList.add('s-weak');
+        text.textContent = 'Debole (Troppo corta)';
+        text.style.color = 'var(--danger)';
+    } else if (strength === 1) {
+        meter.classList.add('s-med');
+        text.textContent = 'Media (Aggiungi numeri/simboli)';
+        text.style.color = 'var(--warning)';
+        isPwdValid = true;
+        btn.disabled = false;
+    } else {
+        meter.classList.add('s-strong');
+        text.textContent = 'Forte e Sicura!';
+        text.style.color = 'var(--success)';
+        isPwdValid = true;
+        btn.disabled = false;
+    }
+}
+
+async function registra() {
+  const u = document.getElementById('ru').value.trim();
+  const e = document.getElementById('re').value.trim();
+  const p = document.getElementById('rp').value;
+
+  document.getElementById('errBox').classList.remove('show');
+
+  if(!u || !isPwdValid) { showErr('Compila Nome Utente e una Password sicura.'); return; }
+  if(u.length < 3) { showErr('L\'username deve avere almeno 3 caratteri.'); return; }
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.style.opacity = '0.7';
+
+  try {
+    const res = await fetch(API+'/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username: u, email: e, password: p, ruolo_richiesto: 'professore'})
+    });
+
+    const data = await res.json();
+    if(!res.ok) { showErr(data.error || 'Si è verificato un errore.'); return; }
+
+    document.getElementById('formWrap').style.display = 'none';
+    document.getElementById('successWrap').classList.add('show');
+  } catch(e) {
+    showErr('Impossibile contattare il server.');
+  } finally {
+    btn.disabled = false; btn.style.opacity = '1';
+  }
+}
+
+function showErr(msg) {
+  document.getElementById('errTxt').textContent = msg;
+  document.getElementById('errBox').classList.add('show');
+}
+
+// Resistenze background
+const NUM_RESISTORS = 6;
+const container = document.getElementById('resistors-container');
+const items = [];
+for(let i=0; i<NUM_RESISTORS; i++) {
+  const img = document.createElement('img'); img.src = 'resistenza.jpg'; img.className = 'resistor'; container.appendChild(img);
+  let width = 300 + Math.random()*300; img.style.width = width+'px'; img.style.filter = `hue-rotate(${i*60}deg)`;
+  items.push({ el: img, x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, vx: (Math.random()>.5?1:-1)*0.5, vy: (Math.random()>.5?1:-1)*0.5, rot: Math.random()*360, vrot: (Math.random()-.5)*0.5, w: width, h: width*0.35 });
+}
+function animateResistors() {
+  items.forEach(item => {
+    item.x+=item.vx; item.y+=item.vy; item.rot+=item.vrot;
+    if (item.x<=-item.w/2) item.vx=Math.abs(item.vx); else if (item.x+item.w/2>=window.innerWidth) item.vx=-Math.abs(item.vx);
+    if (item.y<=-item.h/2) item.vy=Math.abs(item.vy); else if (item.y+item.h/2>=window.innerHeight) item.vy=-Math.abs(item.vy);
+    item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.rot}deg)`;
+  });
+  requestAnimationFrame(animateResistors);
+}
+animateResistors();
+</script>
+
+</body>
+</html>
