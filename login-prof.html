@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FermiStock — Accesso Docenti</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM & VARIABILI "WOW EDITION"
+═══════════════════════════════════════ */
+:root {
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --blue: #2563eb;
+  --cyan: #0ea5e9;
+  --cyan-bright: #06b6d4;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+
+  --brand-gradient: linear-gradient(135deg, var(--cyan-bright), var(--blue));
+
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 24px 48px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-main);
+  background: #f8fafc;
+  color: var(--text-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sfondo Mesh Animato */
+.mesh-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background-color: #f1f5f9; overflow: hidden;
+}
+.mesh-blob {
+  position: absolute; border-radius: 50%; filter: blur(120px);
+  mix-blend-mode: multiply; opacity: 0.6;
+  animation: drift 20s infinite alternate ease-in-out;
+}
+.blob-1 { width: 60vw; height: 60vw; background: #cffafe; top: -10vw; left: -10vw; }
+.blob-2 { width: 50vw; height: 50vw; background: #e0f2fe; bottom: -10vw; right: -10vw; animation-delay: -5s; }
+.blob-3 { width: 40vw; height: 40vw; background: #dbeafe; top: 30vh; left: 40vw; animation-delay: -10s; }
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(10vw, 5vh) scale(1.1); }
+}
+
+.resistor {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  opacity: 0.25;
+  will-change: transform;
+  z-index: 1;
+}
+
+/* NAVBAR GLASSMORPHISM */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 76px; padding: 0 42px;
+  display: flex; align-items: center; justify-content: space-between;
+  backdrop-filter: blur(24px) saturate(150%);
+  background: rgba(255, 255, 255, 0.75);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 100;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--text-dark); letter-spacing: -0.5px; }
+.brand img { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #fff; object-fit: cover; }
+.brand span { color: var(--blue); }
+
+.nav-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: var(--text-muted);
+  text-decoration: none; transition: 0.2s;
+  padding: 8px 16px; border-radius: 12px; background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border);
+}
+.nav-back:hover { background: #fff; color: var(--text-dark); transform: translateX(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+/* LOGIN LAYOUT (BENTO BOX) */
+.login-wrapper {
+  position: relative; z-index: 10; flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 100px 20px 40px;
+}
+
+.login-bento {
+  display: grid; grid-template-columns: 1fr 1fr;
+  width: 100%; max-width: 1000px;
+  background: var(--glass-bg); backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--glass-border); border-radius: 32px;
+  box-shadow: var(--glass-shadow); overflow: hidden;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* PANNELLO SINISTRO (INFO) */
+.login-left {
+  padding: 56px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  border-right: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+.badge-left {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.2);
+  color: var(--cyan-bright); font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px; padding: 6px 14px; border-radius: 20px; margin-bottom: 24px; width: fit-content;
+}
+.left-title { font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px; }
+.left-title span { background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.left-desc { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 32px; font-weight: 500; }
+
+.features-box { display: flex; flex-direction: column; gap: 12px; }
+.feature-item {
+  background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+}
+.feature-item i { color: var(--cyan-bright); }
+.feature-item p { font-size: 13px; color: var(--text-dark); font-weight: 600; margin:0; }
+
+/* PANNELLO DESTRO (FORM MULTI-VIEW) */
+.login-right {
+  padding: 56px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+
+.view-section { display: none; animation: fadeUp 0.4s ease; }
+.view-section.active { display: block; }
+
+.form-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+.form-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; font-weight: 500; }
+
+.input-group { margin-bottom: 20px; position: relative; }
+.input-label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.input-icon { position: absolute; left: 16px; bottom: 14px; color: var(--text-muted); pointer-events: none; }
+.input-control {
+  width: 100%; padding: 14px 16px 14px 44px;
+  background: rgba(255,255,255,0.8); border: 2px solid transparent;
+  border-radius: 16px; font-family: inherit; font-size: 15px; font-weight: 600;
+  color: var(--text-dark); outline: none; transition: 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.input-control:focus { background: #fff; border-color: var(--cyan); box-shadow: 0 4px 12px rgba(14,165,233,0.1); }
+
+.btn-submit {
+  width: 100%; padding: 16px; margin-top: 8px;
+  background: var(--brand-gradient); border: none; border-radius: 16px;
+  color: #fff; font-family: inherit; font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(14,165,233,0.2);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  position: relative; overflow: hidden;
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.3); }
+.btn-submit:active { transform: translateY(0); }
+
+.spinner {
+  width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.8s linear infinite; display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-submit.loading .btn-text { display: none; }
+.btn-submit.loading .spinner { display: block; }
+.btn-submit.loading { pointer-events: none; opacity: 0.8; }
+
+.error-box {
+  display: none; align-items: center; gap: 10px; margin-top: 20px;
+  padding: 14px 16px; background: var(--danger-light); border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px; color: #991b1b; font-size: 13px; font-weight: 600;
+  animation: shake 0.4s ease;
+}
+.error-box.show { display: flex; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+.footer-link {
+  margin-top: 32px; text-align: center; font-size: 13px; color: var(--text-muted); font-weight: 600;
+  padding-top: 24px; border-top: 1px solid var(--glass-border);
+}
+.footer-link a { color: var(--cyan-bright); text-decoration: none; margin-left: 4px; cursor: pointer; }
+.footer-link a:hover { text-decoration: underline; }
+
+.icon-big { width: 64px; height: 64px; border-radius: 20px; background: rgba(14, 165, 233, 0.1); color: var(--cyan-bright); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; border: 1px solid rgba(14, 165, 233, 0.2); }
+
+@media(max-width: 768px) {
+  .login-bento { grid-template-columns: 1fr; }
+  .login-left { display: none; }
+  .login-right { padding: 40px 24px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="mesh-bg">
+  <div class="mesh-blob blob-1"></div>
+  <div class="mesh-blob blob-2"></div>
+  <div class="mesh-blob blob-3"></div>
+</div>
+
+<div id="resistors-container"></div>
+
+<nav>
+  <a class="brand" href="index.html">
+    <img src="logo.jpg" alt="Fermi">
+    Fermi<span>Stock</span>
+  </a>
+  <a href="index.html" class="nav-back">
+    <i data-lucide="arrow-left"></i> Home
+  </a>
+</nav>
+
+<div class="login-wrapper">
+  <div class="login-bento">
+
+    <div class="login-left">
+      <div class="badge-left"><i data-lucide="graduation-cap" style="width:14px;height:14px;"></i> Area Didattica</div>
+      <h1 class="left-title">Portale<br><span>Docenti</span></h1>
+      <p class="left-desc">Accedi all'area riservata al corpo docenti. Da qui puoi interagire con l'inventario per pianificare le tue lezioni e laboratori.</p>
+
+      <div class="features-box">
+        <div class="feature-item"><i data-lucide="package-search"></i><p>Consultazione catalogo in tempo reale</p></div>
+        <div class="feature-item"><i data-lucide="clipboard-list"></i><p>Creazione liste per le esperienze</p></div>
+        <div class="feature-item"><i data-lucide="check-circle-2"></i><p>Verifica disponibilità materiale</p></div>
+      </div>
+    </div>
+
+    <div class="login-right">
+
+      <div id="view-login" class="view-section active">
+        <h2 class="form-title">Bentornato Prof!</h2>
+        <p class="form-subtitle">Inserisci le credenziali approvate dall'amministrazione.</p>
+
+        <div class="input-group">
+          <label class="input-label">Nome Utente</label>
+          <i data-lucide="user" class="input-icon"></i>
+          <input type="text" id="user" class="input-control" placeholder="es. prof_rossi" autocomplete="username">
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Password Personale</label>
+          <i data-lucide="lock" class="input-icon"></i>
+          <input type="password" id="pwd" class="input-control" placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <button class="btn-submit" id="btn-login" onclick="login()">
+          <span class="btn-text">Accedi al Portale</span>
+          <i data-lucide="arrow-right" class="btn-text"></i>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="error-box" id="err-login"><i data-lucide="x-circle"></i><span id="em-login"></span></div>
+
+        <div class="footer-link">
+          <a onclick="switchView('view-forgot')"><i data-lucide="help-circle" style="width:14px;vertical-align:middle;margin-right:2px;"></i> Hai dimenticato la password?</a><br><br>
+          Non hai un account? <a href="register.html">Richiedi l'accesso</a><br>
+          Sei un Tecnico o Admin? <a href="login-tecnico.html">Staff</a> | <a href="login-staff.html">Admin</a>
+        </div>
+      </div>
+
+      <div id="view-forgot" class="view-section">
+        <div class="icon-box icon-big"><i data-lucide="key" style="width:32px;height:32px;"></i></div>
+        <h2 class="form-title" style="text-align:center;">Recupera Password</h2>
+        <p class="form-subtitle" style="text-align:center;">Inserisci l'email istituzionale per ricevere il link di ripristino.</p>
+
+        <div class="input-group">
+          <label class="input-label">Email Istituzionale</label>
+          <i data-lucide="mail" class="input-icon"></i>
+          <input type="email" id="rec-email" class="input-control" placeholder="nome@istituto.it">
+        </div>
+
+        <button class="btn-submit" onclick="sendRecovery()">
+          <span class="btn-text">Invia Link di Reset</span>
+          <i data-lucide="arrow-right" class="btn-text"></i>
+        </button>
+
+        <div class="error-box" id="err-forgot"><i data-lucide="alert-circle"></i><span id="em-forgot"></span></div>
+
+        <div class="footer-link" style="margin-top: 16px; border-top: none;">
+          <a onclick="switchView('view-login')"><i data-lucide="arrow-left" style="width:14px;vertical-align:middle;"></i> Annulla e torna al Login</a>
+        </div>
+      </div>
+
+      <div id="view-success" class="view-section" style="text-align: center;">
+        <div class="icon-box icon-big" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
+          <i data-lucide="mail-check" style="width:32px;height:32px;"></i>
+        </div>
+        <h2 class="form-title">Procedura Avviata</h2>
+        <p class="form-subtitle">Se l'indirizzo inserito corrisponde a un utente docente, riceverai a breve una email con le istruzioni per il reset.</p>
+
+        <button class="btn-submit" onclick="switchView('view-login')" style="margin-top: 24px; background: transparent; border: 2px solid var(--blue); color: var(--blue); box-shadow: none;">
+          Torna alla schermata di Accesso
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+const API = "http://localhost:5000";
+
+// Gestore delle View (Pannelli destri)
+function switchView(targetViewId) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById(targetViewId).classList.add('active');
+
+    // Pulisci gli errori
+    document.getElementById('err-login').classList.remove('show');
+    document.getElementById('err-forgot').classList.remove('show');
+}
+
+// Logica Recupero Password
+async function sendRecovery() {
+    const email = document.getElementById('rec-email').value.trim();
+    const errBox = document.getElementById('err-forgot');
+    const errMsg = document.getElementById('em-forgot');
+
+    errBox.classList.remove('show');
+
+    if(!email.includes('@') || !email.includes('.')) {
+        errMsg.textContent = "Inserisci un indirizzo email valido.";
+        errBox.classList.add('show');
+        return;
+    }
+
+    // Cambia il testo del bottone per mostrare il caricamento
+    const btn = document.querySelector('#view-forgot .btn-submit');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="display:block;"></div>';
+    btn.style.pointerEvents = 'none';
+
+    try {
+        // Chiamata reale al tuo server Flask
+        const res = await fetch(API + '/recupero-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email: email })
+        });
+
+        const data = await res.json();
+
+        if(!res.ok) {
+            errMsg.textContent = data.error || "Errore durante la richiesta.";
+            errBox.classList.add('show');
+            return;
+        }
+
+        // Se va a buon fine, mostra la schermata di successo
+        switchView('view-success');
+        document.getElementById('rec-email').value = '';
+
+    } catch (e) {
+        errMsg.textContent = "Impossibile contattare il server.";
+        errBox.classList.add('show');
+    } finally {
+        // Ripristina il bottone
+        btn.innerHTML = originalText;
+        btn.style.pointerEvents = 'auto';
+    }
+}
+
+// Login Fetch
+async function login() {
+  const u = document.getElementById('user').value.trim();
+  const p = document.getElementById('pwd').value;
+  const btn = document.getElementById('btn-login');
+  const errBox = document.getElementById('err-login');
+
+  errBox.classList.remove('show');
+
+  if(!u || !p) { showErr('Compila tutti i campi richiesti.'); return; }
+
+  btn.classList.add('loading');
+
+  try {
+    const res = await fetch(API+'/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username: u, password: p})
+    });
+
+    const data = await res.json();
+
+    if(!res.ok) { showErr(data.error || 'Credenziali non valide'); return; }
+
+    // BLOCCO RUOLO: SOLO PROFESSORI AMMESSI
+    if(data.ruolo !== 'professore'){
+        showErr('Accesso negato. Questo portale è riservato ai Docenti.');
+        return;
+    }
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('username', data.username);
+    localStorage.setItem('ruolo', data.ruolo);
+
+    // Animazione di uscita
+    document.querySelector('.login-bento').style.transform = 'scale(0.95)';
+    document.querySelector('.login-bento').style.opacity = '0';
+    document.querySelector('.login-bento').style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+
+    setTimeout(() => window.location.href = 'dashboard.html', 400);
+
+  } catch(e) {
+    showErr('Server non raggiungibile. Verifica la connessione.');
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+function showErr(msg) {
+  document.getElementById('em-login').textContent = msg;
+  document.getElementById('err-login').classList.add('show');
+}
+
+// Redirect se già loggato
+if(localStorage.getItem('token')) window.location.href = 'dashboard.html';
+
+// ════════════════════════════════════════════
+// SCRIPT AVANZATO RESISTENZE FLUTTUANTI
+// ════════════════════════════════════════════
+const NUM_RESISTORS = 6;
+const container = document.getElementById('resistors-container');
+const items = [];
+
+for(let i = 0; i < NUM_RESISTORS; i++) {
+  const img = document.createElement('img');
+  img.src = 'resistenza.jpg';
+  img.className = 'resistor';
+  container.appendChild(img);
+
+  let width = 300 + Math.random() * 300;
+  let height = width * 0.35;
+
+  img.style.width = width + 'px';
+  img.style.filter = `hue-rotate(${i * 60}deg)`;
+
+  items.push({
+    el: img,
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.7),
+    vy: (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.7),
+    rot: Math.random() * 360,
+    vrot: (Math.random() - 0.5) * 0.5,
+    w: width,
+    h: height
+  });
+}
+
+function animateResistors() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+
+  items.forEach(item => {
+    item.x += item.vx;
+    item.y += item.vy;
+    item.rot += item.vrot;
+
+    if (item.x <= -item.w / 2) item.vx = Math.abs(item.vx);
+    else if (item.x + item.w / 2 >= W) item.vx = -Math.abs(item.vx);
+
+    if (item.y <= -item.h / 2) item.vy = Math.abs(item.vy);
+    else if (item.y + item.h / 2 >= H) item.vy = -Math.abs(item.vy);
+
+    item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.rot}deg)`;
+  });
+
+  requestAnimationFrame(animateResistors);
+}
+
+animateResistors();
+</script>
+
+</body>
+</html>
