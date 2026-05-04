@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FermiStock — Dashboard WOW Edition</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM & VARIABILI
+═══════════════════════════════════════ */
+:root {
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --cyan: #0ea5e9;
+  --cyan-light: #e0f2fe;
+  --indigo: #4f46e5;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --brand-gradient: linear-gradient(135deg, #2563eb, #0ea5e9, #4f46e5);
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 30px 60px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+  --dock-width: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-main);
+    background: #f8fafc;
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.mesh-bg { position: fixed; inset: 0; z-index: -1; background-color: #f1f5f9; overflow: hidden; }
+.mesh-blob { position: absolute; border-radius: 50%; filter: blur(120px); mix-blend-mode: multiply; opacity: 0.6; animation: drift 20s infinite alternate ease-in-out; }
+.blob-1 { width: 60vw; height: 60vw; background: #e0f2fe; top: -10vw; left: -10vw; animation-delay: 0s; }
+.blob-2 { width: 50vw; height: 50vw; background: #dbeafe; bottom: -10vw; right: -10vw; animation-delay: -5s; }
+.blob-3 { width: 40vw; height: 40vw; background: #eef2ff; top: 30vh; left: 40vw; animation-delay: -10s; }
+@keyframes drift { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(10vw,5vh) scale(1.1); } }
+
+.resistor-img { position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0.15; will-change: transform; z-index: 1; }
+
+/* ═══════════════════════════════════════
+   DOCK (SIDEBAR)
+═══════════════════════════════════════ */
+.dock {
+  position: fixed; top: 24px; bottom: 24px; left: 24px; width: var(--dock-width);
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.55));
+  backdrop-filter: blur(40px) saturate(160%); border: 1px solid var(--glass-border);
+  border-radius: 32px; box-shadow: var(--glass-shadow); padding: 24px;
+  display: flex; flex-direction: column; z-index: 100;
+}
+
+.brand { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; padding: 0 8px; }
+.brand-logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.08); border: 2px solid #fff; }
+.brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+.brand-title { font-size: 18px; font-weight: 800; line-height: 1.1; }
+.brand-title span { color: var(--blue); }
+
+.nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 8px; }
+.nav-menu::-webkit-scrollbar { width: 4px; }
+.nav-menu::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+.nav-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 16px 0 4px 12px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; width: 100%;
+  border-radius: 16px; border: none; background: transparent; font-family: inherit;
+  font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: left;
+}
+.nav-item i { width: 20px; height: 20px; }
+.nav-item:hover { background: #fff; transform: translateX(4px); color: var(--text-dark); }
+.nav-item.active { background: #fff; color: var(--blue); box-shadow: 0 4px 12px rgba(37,99,235,0.08); }
+
+.user-profile {
+  margin-top: 20px; padding: 16px; border-radius: 20px; background: rgba(255,255,255,0.6);
+  border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 12px;
+}
+.u-avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--brand-gradient); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; }
+.u-info { flex: 1; overflow: hidden; }
+.u-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.u-role { font-size: 11px; color: var(--blue); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.logout-btn {
+  width: 100%; padding: 12px; border-radius: 16px; background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1); color: var(--danger); font-weight: 700;
+  cursor: pointer; transition: 0.2s; font-family: inherit; font-size: 13px; margin-top: 8px;
+}
+.logout-btn:hover { background: var(--danger); color: #fff; }
+
+/* ═══════════════════════════════════════
+   MAIN CONTENT E BENTO GRID
+═══════════════════════════════════════ */
+.main-wrapper { margin-left: calc(var(--dock-width) + 24px); padding: 40px; min-height: 100vh; position: relative; z-index: 10; }
+.header-title { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+.header-sub { font-size: 16px; color: var(--text-muted); font-weight: 500; margin-bottom: 32px; }
+
+.page { display: none; animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1); }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(180px, auto); gap: 24px; perspective: 1000px; }
+.bento-box { background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 32px; box-shadow: var(--glass-shadow); padding: 32px; transition: 0.35s; position: relative; overflow: hidden; }
+.bento-box:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); z-index: 10; }
+
+.box-span-2 { grid-column: span 2; }
+.box-span-3 { grid-column: span 3; }
+.box-span-4 { grid-column: span 4; }
+
+.box-welcome {
+  grid-column: span 3; grid-row: span 2;
+  background: radial-gradient(circle at 20% 20%, #e0f2fe 0%, transparent 60%), radial-gradient(circle at 80% 80%, #eef2ff 0%, transparent 60%), linear-gradient(135deg, #ffffff, #f8fafc);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.box-welcome h2 { font-size: 38px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 12px; position: relative; z-index: 1; }
+.box-welcome h2 span { background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.box-welcome p { font-size: 16px; color: var(--text-muted); max-width: 80%; line-height: 1.6; position: relative; z-index: 1; font-weight: 500; }
+
+.box-stat { display: flex; flex-direction: column; justify-content: space-between; }
+.stat-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: auto; }
+.stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+.stat-icon.cyan { background: var(--cyan-light); color: var(--cyan); }
+.stat-icon.red { background: var(--danger-light); color: var(--danger); }
+.stat-value { font-size: 44px; font-weight: 800; line-height: 1; margin-bottom: 4px; letter-spacing: -1px; }
+.stat-label { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+
+/* ═══════════════════════════════════════
+   UI ELEMENTI & TENDINE (FILTRI)
+═══════════════════════════════════════ */
+.advanced-filters {
+    display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px;
+    background: rgba(255,255,255,0.4); padding: 20px; border-radius: 28px; border: 1px solid var(--glass-border);
+}
+
+.filter-select {
+  flex: 1; min-width: 180px; height: 50px; padding: 0 20px;
+  background: #fff; border: 1.5px solid transparent; border-radius: 18px;
+  font-family: var(--font-main); font-size: 14px; font-weight: 500; color: var(--text-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03); outline: none; cursor: pointer; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 18px center; background-size: 16px;
+}
+.filter-select:hover { transform: translateY(-1px); }
+.filter-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+.btn-reset {
+  height: 50px; padding: 0 25px; background: #fff; border: 1.5px solid transparent; border-radius: 18px;
+  font-family: var(--font-main); font-weight: 700; color: var(--text-dark); font-size: 14px;
+  cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: 0.2s;
+}
+.btn-reset:hover { background: var(--danger-light); color: var(--danger); transform: translateY(-1px); }
+
+.input-control { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.8); border: 2px solid transparent; border-radius: 16px; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: 0.2s; outline: none; }
+.input-control:focus { background: #fff; border-color: var(--blue); box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
+.input-wrap { position: relative; }
+.input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px; }
+.input-wrap .input-control { padding-left: 44px; }
+select.input-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; padding-right: 40px !important; }
+
+.bento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.bento-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.table-wrapper { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+th { text-align: left; padding: 0 16px 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+td { padding: 16px; background: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: 0.2s; }
+td:first-child { border-radius: 16px 0 0 16px; font-weight: 700; color: var(--text-dark); }
+td:last-child { border-radius: 0 16px 16px 0; }
+tr:hover td { background: #fff; transform: scale(1.01); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+
+.pill { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.pill.ok { background: var(--success-light); color: var(--success); }
+.pill.low { background: var(--danger-light); color: var(--danger); }
+.pill.neutral { background: rgba(0,0,0,0.04); color: var(--text-muted); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 16px; border: none; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: var(--brand-gradient); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-outline { background: #fff; border: 1px solid var(--glass-border); color: var(--text-dark); }
+.btn-sm { padding: 8px 16px; font-size: 12px; border-radius: 12px; }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); backdrop-filter: blur(12px); z-index: 1000; align-items: center; justify-content: center; padding: 24px; overflow-y:auto; }
+.overlay.show { display: flex; }
+.modal { background: rgba(255,255,255,0.95); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 32px; padding: 40px; width: 100%; max-width: 650px; box-shadow: 0 40px 80px rgba(0,0,0,0.1); position: relative; animation: fadeUp 0.3s cubic-bezier(0.16,1,0.3,1); }
+.modal-close { position: absolute; top: 24px; right: 24px; width: 36px; height: 36px; border-radius: 12px; background: rgba(0,0,0,0.05); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; }
+.modal-close:hover { background: var(--danger-light); color: var(--danger); transform: rotate(90deg); }
+
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+#toast-container { position: fixed; bottom: 32px; right: 32px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+.toast { background: #fff; border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); font-weight: 700; font-size: 14px; animation: slideIn 0.4s cubic-bezier(0.16,1,0.3,1); border-left: 4px solid var(--blue); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.item-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+.btn-remove-row { background: var(--danger-light); color: var(--danger); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+.btn-remove-row:hover { background: var(--danger); color: #fff; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); font-weight: 600; font-size: 15px; }
+
+
+/* ═══════════════════════════════════════
+   MOBILE — TOP BAR (solo mobile)
+═══════════════════════════════════════ */
+.mobile-topbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  z-index: 200;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0 20px;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.mobile-brand span { color: var(--blue); }
+
+.hamburger-btn {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  color: var(--text-dark);
+  transition: 0.2s;
+}
+
+.hamburger-btn:hover {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+/* Backdrop per chiudere il menu su mobile */
+.dock-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.3);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+}
+
+.dock-backdrop.show { display: block; }
+
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — BREAKPOINT PRINCIPALE
+═══════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* --- Mostra la topbar, nascondi il dock fisso --- */
+  .mobile-topbar { display: flex; }
+
+  .dock {
+    top: 0; bottom: 0;
+    left: -320px;              /* nascosto fuori schermo */
+    border-radius: 0 32px 32px 0;
+    transition: left 0.35s cubic-bezier(0.16,1,0.3,1);
+    z-index: 300;
+    padding-top: 32px;
+  }
+
+  .dock.open { left: 0; }
+
+  /* Bottone chiudi dentro il dock su mobile */
+  .dock-close-btn {
+    display: flex;
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.05);
+    border: none; cursor: pointer;
+    align-items: center; justify-content: center;
+    color: var(--text-muted);
+    transition: 0.2s;
+  }
+
+  .dock-close-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+  /* --- Main wrapper: rimuovi il margin del dock, aggiungi spazio per topbar --- */
+  .main-wrapper {
+    margin-left: 0;
+    padding: 88px 16px 32px;
+  }
+
+  /* --- Header --- */
+  .header-title { font-size: 26px; }
+  .header-sub { font-size: 14px; margin-bottom: 20px; }
+
+  /* --- Bento grid: 2 colonne su tablet --- */
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .box-welcome {
+    grid-column: span 2;
+    grid-row: span 1;
+    padding: 28px;
+  }
+
+  .box-welcome h2 { font-size: 26px; }
+  .box-welcome p { font-size: 14px; }
+
+  .box-span-2 { grid-column: span 2; }
+  .box-span-3 { grid-column: span 2; }
+  .box-span-4 { grid-column: span 2; }
+
+  .bento-box { padding: 24px; border-radius: 24px; }
+
+  .stat-value { font-size: 36px; }
+
+  /* --- Filtri avanzati: colonna singola --- */
+  .advanced-filters { flex-direction: column; gap: 10px; padding: 16px; }
+  .filter-select { min-width: 100%; }
+
+  /* --- Bento header: wrappa su due righe --- */
+  .bento-header { flex-wrap: wrap; gap: 12px; }
+  .bento-header .input-wrap { width: 100% !important; }
+
+  /* --- Griglia form: ridotta a 1 colonna --- */
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+
+  /* --- Modal: padding ridotto --- */
+  .modal { padding: 28px 20px; border-radius: 24px; }
+
+  /* --- Toast a sinistra su mobile --- */
+  #toast-container { right: 16px; bottom: 16px; left: 16px; }
+  .toast { font-size: 13px; padding: 14px 18px; }
+
+  /* --- Tabella: font più piccolo, celle compatte --- */
+  td { padding: 12px 10px; font-size: 13px; }
+  th { padding: 0 10px 8px; font-size: 10px; }
+  td:first-child { border-radius: 12px 0 0 12px; }
+  td:last-child { border-radius: 0 12px 12px 0; }
+
+  /* Disabilita l'effetto hover scale sulle righe (causa layout shift su touch) */
+  tr:hover td { transform: none; }
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — BREAKPOINT SMARTPHONE
+═══════════════════════════════════════ */
+@media (max-width: 520px) {
+
+  .main-wrapper { padding: 80px 12px 28px; }
+
+  /* 1 sola colonna su smartphone */
+  .bento-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  .box-welcome { grid-column: span 1; }
+  .box-span-2 { grid-column: span 1; }
+  .box-span-3 { grid-column: span 1; }
+  .box-span-4 { grid-column: span 1; }
+
+  .box-welcome h2 { font-size: 22px; letter-spacing: -0.5px; }
+  .bento-box { padding: 20px; border-radius: 20px; }
+
+  .bento-title { font-size: 17px; }
+  .stat-value { font-size: 32px; }
+  .stat-icon { width: 42px; height: 42px; }
+
+  .btn { padding: 10px 18px; font-size: 13px; }
+  .btn-sm { padding: 7px 14px; font-size: 11px; }
+
+  .header-title { font-size: 22px; }
+  .header-sub { font-size: 13px; }
+
+  /* Le pill si adattano al testo */
+  .pill { font-size: 10px; padding: 4px 10px; }
+
+  /* Input control */
+  .input-control { padding: 12px 14px; font-size: 13px; }
+
+  /* Nasconde le resistenze fluttuanti su smartphone (troppo pesante) */
+  .resistor-img { display: none; }
+
+  /* Modal a pieno schermo su mobile piccolo */
+  .overlay { padding: 12px; align-items: flex-end; }
+  .modal { border-radius: 24px 24px 20px 20px; padding: 24px 16px; max-height: 90vh; overflow-y: auto; }
+
+  /* Filtri: solo icona per i bottoni azione nelle tabelle */
+  .nav-item { font-size: 13px; }
+}
+
+/* Su desktop: nascondi il bottone di chiusura interno al dock */
+@media (min-width: 901px) {
+  .dock-close-btn { display: none !important; }
+  .mobile-topbar { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="mesh-bg">
+  <div class="mesh-blob blob-1"></div><div class="mesh-blob blob-2"></div><div class="mesh-blob blob-3"></div>
+</div>
+<div id="scene">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+</div>
+
+<!-- TOP BAR MOBILE -->
+<div class="mobile-topbar">
+  <div class="mobile-brand">
+    <div class="brand-logo" style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,0.08);">
+      <img src="logo.jpg" alt="Fermi" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    Fermi<span>Stock</span>
+  </div>
+  <button class="hamburger-btn" onclick="toggleMobileNav()" aria-label="Apri menu">
+    <i data-lucide="menu" style="width:22px;height:22px;"></i>
+  </button>
+</div>
+
+<!-- BACKDROP per chiudere il menu toccando fuori -->
+<div class="dock-backdrop" id="dock-backdrop" onclick="closeMobileNav()"></div>
+
+<nav class="dock" id="main-dock">
+  <!-- Bottone X solo su mobile -->
+  <button class="dock-close-btn" onclick="closeMobileNav()" aria-label="Chiudi menu">
+    <i data-lucide="x" style="width:18px;height:18px;"></i>
+  </button>
+
+  <div class="brand">
+    <div class="brand-logo"><img src="logo.jpg" alt="Fermi"></div>
+    <div><div class="brand-title">Fermi<span>Stock</span></div><div class="brand-sub">Istituto E. Fermi</div></div>
+  </div>
+
+  <div class="nav-menu">
+    <div class="nav-label">Principale</div>
+    <button class="nav-item active" onclick="navigate('dashboard', this)"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+    <button class="nav-item" onclick="navigate('componenti', this)"><i data-lucide="package"></i> Catalogo</button>
+    <button class="nav-item" onclick="navigate('elenchi', this)"><i data-lucide="clipboard-list"></i> Liste Esperienze</button>
+
+    <div class="nav-label staff-only" style="display:none">Logistica & Acquisizione</div>
+    <button class="nav-item staff-only" style="display:none" onclick="navigate('movimenti', this)"><i data-lucide="arrow-right-left"></i> Magazzino</button>
+    <button class="nav-item staff-only" style="display:none" onclick="navigate('acquisti', this)"><i data-lucide="shopping-cart"></i> Lista Acquisti</button>
+    <button class="nav-item staff-only" style="display:none" onclick="navigate('classificazione', this)"><i data-lucide="tags"></i> Parametri</button>
+
+    <div class="nav-label admin-only" style="display:none">Sicurezza</div>
+    <button class="nav-item admin-only" style="display:none" onclick="navigate('utenti', this)"><i data-lucide="users"></i> Utenti</button>
+    <button class="nav-item staff-only" style="display:none" onclick="navigate('log', this)"><i data-lucide="history"></i> Audit Log</button>
+  </div>
+
+  <div class="user-profile">
+    <div class="u-avatar" id="u-avatar">?</div>
+    <div class="u-info">
+        <div class="u-name" id="u-name">Utente</div>
+        <div class="u-role" id="u-role">Ruolo</div>
+    </div>
+  </div>
+
+  <button class="logout-btn" style="background: rgba(37, 99, 235, 0.05); border-color: rgba(37, 99, 235, 0.1); color: var(--blue); margin-bottom: 8px;" onclick="openModal('modal-password')">
+    <i data-lucide="key" style="width:14px; margin-right:4px; vertical-align:middle;"></i> Cambia Password
+  </button>
+  <button class="logout-btn" onclick="logout()">Disconnetti</button>
+</nav>
+
+<main class="main-wrapper">
+  <header style="margin-bottom: 32px;">
+    <h1 class="header-title" id="page-title">Dashboard</h1>
+    <div class="header-sub" id="page-subtitle">Riepilogo in tempo reale del laboratorio.</div>
+  </header>
+
+  <div class="page active" id="page-dashboard">
+    <div class="bento-grid">
+      <div class="bento-box box-welcome box-span-3">
+        <h2 id="welcome-text">Bentornato 👋</h2>
+        <p>Monitora il materiale del laboratorio, gestisci le scorte e organizza le esperienze didattiche con facilità.</p>
+      </div>
+      <div class="bento-box box-stat">
+          <div class="stat-icon blue"><i data-lucide="box"></i></div>
+          <div><div class="stat-value" id="stat-tot">0</div><div class="stat-label">Articoli a catalogo</div></div>
+      </div>
+      <div class="bento-box box-stat">
+          <div class="stat-icon cyan"><i data-lucide="clipboard-list"></i></div>
+          <div><div class="stat-value" id="stat-liste">0</div><div class="stat-label">Liste create</div></div>
+      </div>
+      <div class="bento-box box-span-4 staff-only" style="display:none; height:auto; min-height:180px;">
+        <div class="bento-header">
+            <div class="bento-title" style="color:var(--danger)"><i data-lucide="alert-octagon"></i> Allerta Scorte Minime</div>
+            <button class="btn btn-outline btn-sm" onclick="document.querySelectorAll('.nav-item')[3].click()">Gestisci Scorte</button>
+        </div>
+        <div class="table-wrapper">
+            <table id="dash-scorte-tb"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-componenti">
+    <div class="bento-box box-span-4" style="height: auto; min-height: 60vh;">
+      <div class="bento-header">
+        <div class="input-wrap" style="width: 400px;">
+          <span class="input-icon"><i data-lucide="search" style="width:16px"></i></span>
+          <input type="text" class="input-control input with-icon" id="search-main" placeholder="Cerca componente..." oninput="applyAdvancedSearch()">
+        </div>
+        <button class="btn btn-primary staff-only" style="display:none" onclick="openNewCompModal()">+ Nuovo Componente</button>
+      </div>
+      <div class="advanced-filters">
+        <select class="filter-select" id="filter-famiglia" onchange="applyAdvancedSearch()"><option value="">Famiglie...</option></select>
+        <select class="filter-select" id="filter-tag" onchange="applyAdvancedSearch()"><option value="">Tag...</option></select>
+        <select class="filter-select" id="filter-elenco" onchange="applyAdvancedSearch()"><option value="">Elenchi...</option></select>
+        <button class="btn-reset" onclick="resetSearch()">Reset</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+              <tr>
+                  <th>Componente</th>
+                  <th>Classificazione (4 Livelli)</th>
+                  <th>Giacenza</th>
+                  <th>Posizione (ASC)</th>
+                  <th>Datasheet</th>
+                  <th class="staff-only" style="display:none">Azioni</th>
+              </tr>
+          </thead>
+          <tbody id="tb-comp"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-elenchi">
+    <div class="bento-box box-span-4" style="height: auto; min-height: 60vh;">
+      <div class="bento-header">
+        <div class="bento-title">Attività Didattiche</div>
+        <button class="btn btn-primary" onclick="openElencoModal()">+ Nuova Lista</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Esperienza</th><th>Materiali Associati (Quantità)</th><th style="text-align:right;">Azioni</th></tr></thead>
+          <tbody id="tb-elenchi"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-acquisti">
+    <div class="bento-grid">
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-title">✍️ Nuova Richiesta Acquisto</div>
+        <div class="form-group" style="margin-top:20px;">
+          <label class="form-label">Nome Oggetto (Testo Libero)</label>
+          <input type="text" id="acq-nome" class="input-control" placeholder="Es. Sensore Gas MQ-2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantità Necessaria</label>
+          <input type="number" id="acq-qty" class="input-control" value="1">
+        </div>
+        <button class="btn btn-primary" style="width: 100%; margin-top:20px;" onclick="addPurchaseManual()">Aggiungi alla Lista</button>
+      </div>
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-header">
+          <div class="bento-title">🛒 Carrello della Spesa</div>
+          <button class="btn btn-primary btn-sm" onclick="exportPurchaseList()"><i data-lucide="download"></i> Esporta .txt</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Oggetto</th><th>Q.tà</th><th>Azione</th></tr></thead>
+            <tbody id="tb-acquisti"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-classificazione">
+    <div class="bento-grid">
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-header"><div class="bento-title">Famiglie (Categorie)</div></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <input type="text" id="in-fam" class="input-control" placeholder="Es. Diodi" style="flex:1; min-width:150px;">
+            <button class="btn btn-primary" onclick="addParam('famiglie','in-fam')">Aggiungi</button>
+        </div>
+        <div id="list-fam" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-header"><div class="bento-title">Tipi</div></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <input type="text" id="in-tipo" class="input-control" placeholder="Es. Zener" style="flex:1; min-width:150px;">
+            <button class="btn btn-primary" onclick="addParam('tipi','in-tipo')">Aggiungi</button>
+        </div>
+        <div id="list-tipo" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-header"><div class="bento-title">Ambiti</div></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <input type="text" id="in-amb" class="input-control" placeholder="Es. Elettronica di Potenza" style="flex:1; min-width:150px;">
+            <button class="btn btn-primary" onclick="addParam('ambiti','in-amb')">Aggiungi</button>
+        </div>
+        <div id="list-amb" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+      <div class="bento-box box-span-2" style="height: auto;">
+        <div class="bento-header"><div class="bento-title">Tag Caratteristiche</div></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <input type="text" id="in-tag" class="input-control" placeholder="Es. 12V, SMD" style="flex:1; min-width:150px;">
+            <button class="btn btn-success" onclick="addParam('tags','in-tag')">Aggiungi</button>
+        </div>
+        <div id="list-tag" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-movimenti">
+      <div class="bento-grid">
+          <div class="bento-box box-span-2" style="height: auto;">
+              <div class="bento-title" style="color:var(--success)">CARICO MAGAZZINO</div>
+              <div class="form-group" style="margin-top:20px;">
+                  <label class="form-label">Articolo</label>
+                  <select id="mc-comp" class="input-control"></select>
+              </div>
+              <div class="form-group">
+                  <label class="form-label">Quantità in Entrata</label>
+                  <input type="number" id="mc-qty" class="input-control" placeholder="0">
+              </div>
+              <button class="btn btn-success" style="width:100%" onclick="registraMov('carico')">Registra Entrata</button>
+          </div>
+          <div class="bento-box box-span-2" style="height: auto;">
+              <div class="bento-title" style="color:var(--danger)">SCARICO MATERIALE</div>
+              <div class="form-group" style="margin-top:20px;">
+                  <label class="form-label">Articolo</label>
+                  <select id="ms-comp" class="input-control"></select>
+              </div>
+              <div class="form-group">
+                  <label class="form-label">Quantità in Uscita</label>
+                  <input type="number" id="ms-qty" class="input-control" placeholder="0">
+              </div>
+              <button class="btn btn-danger" style="width:100%" onclick="registraMov('scarico')">Registra Uscita</button>
+          </div>
+      </div>
+  </div>
+
+  <div class="page" id="page-utenti">
+    <div class="bento-box box-span-4" style="margin-bottom:24px; height:auto;">
+        <div class="bento-title">Approvazione Richieste Account</div>
+        <div class="table-wrapper">
+            <table style="width:100%; margin-top:16px;"><tbody id="tb-attesa"></tbody></table>
+        </div>
+    </div>
+    <div class="bento-box box-span-4" style="height:auto;">
+        <div class="bento-header">
+            <div class="bento-title">Anagrafica Staff</div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-utente')">+ Nuovo Staff</button>
+        </div>
+        <div class="table-wrapper">
+            <table style="width:100%"><tbody id="tb-utenti"></tbody></table>
+        </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-log">
+    <div class="bento-box box-span-4" style="height: auto; min-height: 60vh;">
+      <div class="bento-header"><div class="bento-title">Audit Trail (Attività di Sistema)</div></div>
+      <div class="table-wrapper">
+          <table>
+              <thead><tr><th>Data/Ora</th><th>Operatore</th><th>Azione</th><th>Dettagli</th></tr></thead>
+              <tbody id="tb-log"></tbody>
+          </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODALS -->
+<div class="overlay" id="modal-password">
+  <div class="modal" style="max-width: 400px;">
+    <button class="modal-close" onclick="closeModal('modal-password')"><i data-lucide="x"></i></button>
+    <h2 class="bento-title" style="margin-bottom: 8px;">Cambia Password</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Aggiorna le tue credenziali di accesso.</p>
+    <div class="form-group"><label class="form-label">Password Attuale</label><input type="password" id="cp-vecchia" class="input-control" placeholder="Inserisci password attuale"></div>
+    <div class="form-group"><label class="form-label">Nuova Password</label><input type="password" id="cp-nuova" class="input-control" placeholder="Scegli nuova password"></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="aggiornaPassword()">Conferma Modifica</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-qr">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <button class="modal-close" onclick="closeModal('modal-qr')"><i data-lucide="x"></i></button>
+    <h2 class="bento-title" style="margin-bottom: 8px;">Codice a Barre (QR)</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;" id="qr-comp-name">Nome Componente</p>
+    <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 24px; padding: 20px; background: #fff; border-radius: 16px; border: 1px solid var(--glass-border);"></div>
+    <button class="btn btn-outline" style="width:100%;" onclick="window.print()">Stampa Etichetta</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-comp">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-comp')"><i data-lucide="x"></i></button>
+    <h2 id="modal-comp-title" class="bento-title" style="margin-bottom: 24px;">Crea Componente</h2>
+    <div class="form-group"><label class="form-label">Nome Completo</label><input type="text" id="c-nome" class="input-control" placeholder="Es. Resistenza 10k"></div>
+    <div class="grid-3">
+        <div class="form-group"><label class="form-label">Famiglia</label><select id="c-famiglia" class="input-control"></select></div>
+        <div class="form-group"><label class="form-label">Tipo</label><select id="c-tipo" class="input-control"></select></div>
+        <div class="form-group"><label class="form-label">Ambito</label><select id="c-ambito" class="input-control"></select></div>
+    </div>
+    <div class="grid-3">
+        <div class="form-group"><label class="form-label">Ambiente (A)</label><input type="text" id="c-ambiente" class="input-control" placeholder="Es. LAB1"></div>
+        <div class="form-group"><label class="form-label">Sezione (S)</label><input type="number" id="c-sezione" class="input-control" placeholder="Es. 10"></div>
+        <div class="form-group"><label class="form-label">Cassetto (C)</label><input type="text" id="c-cassetto" class="input-control" placeholder="Es. B2"></div>
+    </div>
+    <div class="grid-3">
+        <div class="form-group"><label class="form-label">Giacenza</label><input type="number" id="c-qty" class="input-control" value="0"></div>
+        <div class="form-group"><label class="form-label">Scorta Min.</label><input type="number" id="c-min" class="input-control" value="5"></div>
+        <div class="form-group"><label class="form-label">Qty Generica</label><input type="text" id="c-qty-gen" class="input-control" placeholder="Es. Poche"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:24px;">
+        <label style="display:flex; align-items:center; gap:8px; font-weight:700; color:var(--text-dark); cursor:pointer;">
+            <input type="checkbox" id="c-is-scorta" style="width:18px; height:18px;"> Contrassegna come Elemento di Scorta
+        </label>
+    </div>
+    <div class="form-group">
+        <label class="form-label">Tags (CTRL per selezione multipla)</label>
+        <select id="c-tags-multi" class="input-control" multiple style="height: 120px; padding:8px;"></select>
+    </div>
+    <div class="form-group"><label class="form-label">Link Datasheet</label><input type="url" id="c-datasheet" class="input-control" placeholder="https://..."></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="salvaComp()">Salva nel Database</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-elenco">
+  <div class="modal" style="max-width: 600px;">
+    <button class="modal-close" onclick="closeModal('modal-elenco')"><i data-lucide="x"></i></button>
+    <h2 class="bento-title" style="margin-bottom: 24px;">Nuova Lista Esperienza</h2>
+    <div class="form-group"><label class="form-label">Titolo Esperienza</label><input type="text" id="e-nome" class="input-control" placeholder="Es. Filtro Passa Basso"></div>
+    <label class="form-label">Componenti Necessari</label>
+    <div id="elenco-rows" style="margin-bottom:16px;"></div>
+    <button class="btn btn-outline btn-sm" style="width:100%; border-radius:16px; height: 44px;" onclick="addElencoRow()">+ Aggiungi Voce</button>
+    <button class="btn btn-primary" style="width:100%; margin-top:24px;" onclick="salvaElenco()">Salva Lista Definitiva</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-utente">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-utente')"><i data-lucide="x"></i></button>
+    <h2 class="bento-title" style="margin-bottom: 24px;">Crea Account Staff</h2>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="u-user" class="input-control"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="u-email" class="input-control"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Password Iniziale</label><input type="password" id="u-pwd" class="input-control"></div>
+    <div class="form-group"><label class="form-label">Privilegi</label>
+        <select id="u-ruolo" class="input-control"><option value="tecnico">Tecnico</option><option value="admin">Root Admin</option></select>
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="salvaUtente()">Registra Account</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   LOGICA JAVASCRIPT CORE
+═══════════════════════════════════════ */
+const API = "http://127.0.0.1:5000";
+const token = localStorage.getItem('token');
+const ruolo = localStorage.getItem('ruolo');
+let componentsCache = [];
+let elenchiCache = [];
+let purchaseList = [];
+let qrcodeInstance = null;
+let currentEditCompId = null;
+
+const pageDict = {
+  'dashboard': { title: 'Dashboard', sub: 'Controllo globale del magazzino.' },
+  'componenti': { title: 'Catalogo Materiali', sub: 'Ricerca avanzata ed esplorazione inventario.' },
+  'elenchi': { title: 'Didattica', sub: 'Gestione liste componenti per esperienze di laboratorio.' },
+  'movimenti': { title: 'Logistica', sub: 'Carico e scarico rapido della merce.' },
+  'acquisti': { title: 'Gestione Acquisti', sub: 'Elenco del fabbisogno per il laboratorio.' },
+  'classificazione': { title: 'Parametri e Tassonomia', sub: 'Impostazione delle categorie a 4 livelli e Tag.' },
+  'utenti': { title: 'Amministrazione Staff', sub: 'Gestione accessi e permessi.' },
+  'log': { title: 'Audit Log', sub: 'Registro di tutte le operazioni di sistema.' }
+};
+
+/* ── MOBILE NAV ── */
+function toggleMobileNav() {
+  const dock = document.getElementById('main-dock');
+  const backdrop = document.getElementById('dock-backdrop');
+  const isOpen = dock.classList.contains('open');
+  if(isOpen) { closeMobileNav(); }
+  else { dock.classList.add('open'); backdrop.classList.add('show'); document.body.style.overflow = 'hidden'; }
+}
+
+function closeMobileNav() {
+  document.getElementById('main-dock').classList.remove('open');
+  document.getElementById('dock-backdrop').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function init() {
+  if(!token) { window.location.href = 'index.html'; return; }
+  document.getElementById('u-name').innerText = localStorage.getItem('username');
+  document.getElementById('u-role').innerText = ruolo.toUpperCase();
+  document.getElementById('u-avatar').innerText = localStorage.getItem('username')[0].toUpperCase();
+
+  if(ruolo !== 'professore') document.querySelectorAll('.staff-only').forEach(e => e.style.display = 'block');
+  if(ruolo === 'admin') document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
+
+  lucide.createIcons();
+  refresh();
+}
+
+async function fetchAPI(path, method='GET', body=null) {
+  const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+  if(body) options.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API + path, options);
+    if(res.status === 401) { logout(); }
+    const text = await res.text();
+    return text ? JSON.parse(text) : {success:true};
+  } catch(e) { console.error(e); return null; }
+}
+
+async function refresh() {
+  const [comp, elenchi, fam, tipi, ambiti, tags] = await Promise.all([
+    fetchAPI('/componenti'), fetchAPI('/elenchi'), fetchAPI('/famiglie'), fetchAPI('/tipi'), fetchAPI('/ambiti'), fetchAPI('/tags')
+  ]);
+
+  componentsCache = comp || [];
+  elenchiCache = elenchi || [];
+
+  renderComp(componentsCache);
+  renderElenchi(elenchiCache);
+  renderClassification(fam || [], tipi || [], ambiti || [], tags || []);
+  populateSelects(componentsCache, fam || [], tipi || [], ambiti || [], tags || []);
+
+  document.getElementById('stat-tot').innerText = componentsCache.length;
+  document.getElementById('stat-liste').innerText = elenchiCache.length;
+
+  if(ruolo !== 'professore') { loadScorte(); loadLog(); }
+  if(ruolo === 'admin') { loadUtenti(); }
+}
+
+async function aggiornaPassword() {
+    const vecchia = document.getElementById('cp-vecchia').value;
+    const nuova = document.getElementById('cp-nuova').value;
+    if(!vecchia || !nuova) return showToast("Compila tutti i campi", "danger");
+    if(nuova.length < 6) return showToast("La nuova password deve avere almeno 6 caratteri", "danger");
+    const res = await fetchAPI('/cambia-password', 'POST', { vecchia_password: vecchia, nuova_password: nuova });
+    if(res && !res.error) { showToast("Password aggiornata con successo!"); closeModal('modal-password'); document.getElementById('cp-vecchia').value = ''; document.getElementById('cp-nuova').value = ''; }
+    else showToast(res.error || "Errore: password attuale errata", "danger");
+}
+
+function applyAdvancedSearch() {
+    const text = document.getElementById('search-main').value.toLowerCase();
+    const fam = document.getElementById('filter-famiglia').value;
+    const tag = document.getElementById('filter-tag').value;
+    const eid = document.getElementById('filter-elenco').value;
+    const filtrati = componentsCache.filter(c => {
+        const textM = c.nome.toLowerCase().includes(text) || (c.famiglia && c.famiglia.toLowerCase().includes(text));
+        const famM = !fam || c.famiglia === fam;
+        let tagM = true;
+        if(tag) tagM = c.tag_nomi && c.tag_nomi.includes(tag);
+        let listM = true;
+        if(eid) { const list = elenchiCache.find(x => x.id == eid); listM = list && list.componenti && list.componenti.some(comp => comp.id == c.id); }
+        return textM && famM && tagM && listM;
+    });
+    renderComp(filtrati);
+}
+
+function resetSearch() {
+    document.getElementById('search-main').value = '';
+    document.getElementById('filter-famiglia').value = '';
+    document.getElementById('filter-tag').value = '';
+    document.getElementById('filter-elenco').value = '';
+    renderComp(componentsCache);
+}
+
+function showQRCode(idComponente, nomeComponente) {
+    document.getElementById('qr-comp-name').innerText = nomeComponente;
+    const qrContainer = document.getElementById("qrcode-container");
+    qrContainer.innerHTML = "";
+    qrcodeInstance = new QRCode(qrContainer, { text: JSON.stringify({ action: "carico_scarico", id: idComponente }), width: 150, height: 150, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+    openModal('modal-qr');
+}
+
+function renderComp(data) {
+  const tbody = document.getElementById('tb-comp');
+  if(data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Nessun componente trovato nel database.</td></tr>`; return; }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+        <td><b>${c.nome}</b><br><small style="color:var(--indigo)">${c.elenchi_correlati ? 'In: ' + c.elenchi_correlati : 'Nessuna lista collegata'}</small></td>
+        <td>
+            <span class="pill neutral">${c.famiglia || 'No Famiglia'}</span>
+            <span class="pill neutral">${c.tipo || 'No Tipo'}</span>
+            <span class="pill neutral">${c.ambito || 'No Ambito'}</span><br>
+            <small style="color:var(--text-muted)">Tags: ${c.tag_nomi || '-'}</small>
+        </td>
+        <td>
+            <span class="pill ${c.quantita <= c.quantita_minima ? 'low' : 'ok'}">${c.quantita}</span><br>
+            <small>${c.quantita_generica || ''}</small>
+        </td>
+        <td><b title="Ambiente-Sezione-Cassetto">${c.ambiente || '-'} - ${c.sezione || '-'} - ${c.cassetto || '-'}</b>${c.is_scorta ? '<br><span class="pill ok" style="font-size:9px">SCORTA</span>' : ''}</td>
+        <td>${c.datasheet ? `<a href="${c.datasheet}" target="_blank" style="color:var(--blue); text-decoration:none; font-weight:700;"><i data-lucide="file-text" style="width:16px; vertical-align:middle; margin-right:4px;"></i>Datasheet</a>` : '-'}</td>
+        <td class="staff-only" style="display:${ruolo==='professore'?'none':'table-cell'}; white-space:nowrap;">
+            <button class="btn-outline btn-sm" style="border:none; color:var(--text-dark); cursor:pointer; padding:4px;" onclick="showQRCode(${c.id}, '${c.nome.replace(/'/g, "\\'")}')" title="QR"><i data-lucide="qr-code" style="width:16px"></i></button>
+            <button class="btn-outline btn-sm" style="border:none; color:var(--blue); cursor:pointer; padding:4px;" onclick="editComp(${c.id})" title="Modifica"><i data-lucide="edit" style="width:16px"></i></button>
+            <button class="btn-outline btn-sm" style="border:none; color:var(--danger); cursor:pointer; padding:4px;" onclick="deleteComp(${c.id})" title="Elimina"><i data-lucide="trash-2" style="width:16px"></i></button>
+        </td>
+    </tr>`).join('');
+  lucide.createIcons();
+}
+
+function openNewCompModal() {
+    currentEditCompId = null;
+    document.getElementById('modal-comp-title').innerText = "Crea Nuovo Componente";
+    ['c-nome','c-ambiente','c-sezione','c-cassetto','c-qty-gen','c-datasheet'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('c-qty').value = '0';
+    document.getElementById('c-min').value = '5';
+    document.getElementById('c-is-scorta').checked = false;
+    Array.from(document.getElementById('c-tags-multi').options).forEach(opt => opt.selected = false);
+    openModal('modal-comp');
+}
+
+function editComp(id) {
+    const c = componentsCache.find(x => x.id === id);
+    if(!c) return;
+    currentEditCompId = id;
+    document.getElementById('modal-comp-title').innerText = "Modifica Componente Esistente";
+    document.getElementById('c-nome').value = c.nome;
+    document.getElementById('c-famiglia').value = c.famiglia || '';
+    document.getElementById('c-tipo').value = c.tipo || '';
+    document.getElementById('c-ambito').value = c.ambito || '';
+    document.getElementById('c-ambiente').value = c.ambiente || '';
+    document.getElementById('c-sezione').value = c.sezione || '';
+    document.getElementById('c-cassetto').value = c.cassetto || '';
+    document.getElementById('c-qty').value = c.quantita;
+    document.getElementById('c-min').value = c.quantita_minima;
+    document.getElementById('c-qty-gen').value = c.quantita_generica || '';
+    document.getElementById('c-is-scorta').checked = c.is_scorta === 1;
+    document.getElementById('c-datasheet').value = c.datasheet || '';
+    const tagIds = c.tag_ids_list ? c.tag_ids_list.split(',') : [];
+    Array.from(document.getElementById('c-tags-multi').options).forEach(opt => opt.selected = tagIds.includes(opt.value));
+    openModal('modal-comp');
+}
+
+async function salvaComp() {
+    const selectedTags = Array.from(document.getElementById('c-tags-multi').selectedOptions).map(opt => parseInt(opt.value));
+    const body = {
+      nome: document.getElementById('c-nome').value,
+      famiglia: document.getElementById('c-famiglia').value,
+      tipo: document.getElementById('c-tipo').value,
+      ambito: document.getElementById('c-ambito').value,
+      ambiente: document.getElementById('c-ambiente').value,
+      sezione: document.getElementById('c-sezione').value,
+      cassetto: document.getElementById('c-cassetto').value,
+      quantita: +document.getElementById('c-qty').value,
+      quantita_minima: +document.getElementById('c-min').value,
+      quantita_generica: document.getElementById('c-qty-gen').value,
+      is_scorta: document.getElementById('c-is-scorta').checked,
+      datasheet: document.getElementById('c-datasheet').value.trim(),
+      tag_ids: selectedTags
+    };
+    if(!body.nome) return showToast("Il Nome del componente è obbligatorio", "danger");
+    if(currentEditCompId) { await fetchAPI(`/componenti/${currentEditCompId}`, 'PUT', body); showToast("Componente aggiornato con successo"); }
+    else { await fetchAPI('/componenti', 'POST', body); showToast("Componente registrato nel database"); }
+    closeModal('modal-comp'); refresh();
+}
+
+async function registraMov(tipo) {
+    const cid = tipo === 'carico' ? document.getElementById('mc-comp').value : document.getElementById('ms-comp').value;
+    const qty = tipo === 'carico' ? document.getElementById('mc-qty').value : document.getElementById('ms-qty').value;
+    if(!qty || qty < 1) return showToast("La quantità inserita non è valida", "danger");
+    await fetchAPI('/movimento', 'POST', { componente_id: parseInt(cid), tipo, quantita: parseInt(qty) });
+    showToast(`Movimento di ${tipo} completato`);
+    document.getElementById(tipo === 'carico' ? 'mc-qty' : 'ms-qty').value = '';
+    refresh();
+}
+
+function navigate(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('page-title').innerText = pageDict[id].title;
+    document.getElementById('page-subtitle').innerText = pageDict[id].sub;
+    // Chiude il nav su mobile dopo la navigazione
+    closeMobileNav();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function showToast(message, type="success") {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<span style="font-size:18px;">${type === 'success' ? '✅' : '⚠️'}</span> <span style="color:var(--text-dark)">${message}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+function addPurchaseManual() {
+    const nome = document.getElementById('acq-nome').value.trim();
+    const qty = parseInt(document.getElementById('acq-qty').value);
+    if(!nome || isNaN(qty) || qty < 1) return showToast("Dati inseriti non validi", "danger");
+    purchaseList.push({nome, qty});
+    document.getElementById('acq-nome').value = '';
+    document.getElementById('acq-qty').value = '1';
+    renderPurchases(); showToast("Oggetto aggiunto al carrello");
+}
+
+function renderPurchases() {
+    const tbody = document.getElementById('tb-acquisti');
+    if(purchaseList.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="empty-state">La lista della spesa è vuota</td></tr>`; return; }
+    tbody.innerHTML = purchaseList.map((a, i) => `<tr><td><b>${a.nome}</b></td><td>${a.qty}</td><td><button onclick="purchaseList.splice(${i},1);renderPurchases();" class="btn-remove-row" style="width:36px;height:36px"><i data-lucide="x" style="width:16px"></i></button></td></tr>`).join('');
+    lucide.createIcons();
+}
+
+function exportPurchaseList() {
+    if(purchaseList.length === 0) return showToast("La lista è vuota, impossibile esportare!", "danger");
+    let content = "FERMISTOCK - LISTA ACQUISTI LABORATORIO\n=============================================\n\n";
+    purchaseList.forEach(a => { content += `- ${a.nome.padEnd(30)} Quantità: ${a.qty}\n`; });
+    const blob = new Blob([content], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'acquisti_fermistock.txt'; a.click();
+}
+
+function openElencoModal() {
+    document.getElementById('e-nome').value = '';
+    document.getElementById('elenco-rows').innerHTML = '';
+    addElencoRow(); openModal('modal-elenco');
+}
+
+function addElencoRow() {
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `<select class="input-control">${componentsCache.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}</select><input type="number" class="input-control" value="1" style="width:100px"><button onclick="this.parentElement.remove()" class="btn-remove-row" style="width:48px;height:48px"><i data-lucide="trash"></i></button>`;
+    document.getElementById('elenco-rows').appendChild(div); lucide.createIcons();
+}
+
+async function salvaElenco() {
+    const nome = document.getElementById('e-nome').value;
+    if(!nome) return showToast("Inserisci un titolo per l'esperienza", "danger");
+    const rows = document.querySelectorAll('#elenco-rows .item-row');
+    const componenti = Array.from(rows).map(r => ({ id_componente: parseInt(r.querySelector('select').value), quantita: parseInt(r.querySelector('input').value) }));
+    await fetchAPI('/elenchi', 'POST', {nome, componenti}); closeModal('modal-elenco');
+    showToast("Lista esperienza creata correttamente"); refresh();
+}
+
+function renderElenchi(data) {
+    const tbody = document.getElementById('tb-elenchi');
+    if(data.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="empty-state">Nessuna lista creata al momento.</td></tr>`; return; }
+    tbody.innerHTML = data.map(e => `
+        <tr>
+            <td><b>${e.nome}</b></td>
+            <td>${(e.componenti || []).map(c => {
+                const compInMagazzino = componentsCache.find(x => x.id === c.id);
+                const disp = compInMagazzino ? compInMagazzino.quantita : 0;
+                const isCarenza = disp < c.quantita;
+                const textColor = isCarenza ? 'color: var(--danger); font-weight: 800;' : '';
+                return `<span class="pill neutral" style="margin:2px; ${textColor}">${c.quantita}x ${c.nome} (Disp: ${disp})</span>`;
+            }).join(' ')}</td>
+            <td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="deleteElenco(${e.id})">Elimina</button></td>
+        </tr>`).join('');
+}
+
+function renderClassification(fam, tipi, ambiti, tags) {
+    const render = (list) => list.map(item => `<span class="pill neutral">${item.nome}</span>`).join('');
+    document.getElementById('list-fam').innerHTML = render(fam);
+    document.getElementById('list-tipo').innerHTML = render(tipi);
+    document.getElementById('list-amb').innerHTML = render(ambiti);
+    document.getElementById('list-tag').innerHTML = render(tags);
+}
+
+function populateSelects(comp, fam, tipi, ambiti, tags) {
+    const opts = (list) => '<option value="">- Seleziona -</option>' + list.map(item => `<option value="${item.nome}">${item.nome}</option>`).join('');
+    document.getElementById('c-famiglia').innerHTML = opts(fam);
+    document.getElementById('c-tipo').innerHTML = opts(tipi);
+    document.getElementById('c-ambito').innerHTML = opts(ambiti);
+    document.getElementById('c-tags-multi').innerHTML = tags.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+    document.getElementById('mc-comp').innerHTML = comp.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    document.getElementById('ms-comp').innerHTML = comp.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    document.getElementById('filter-famiglia').innerHTML = '<option value="">Tutte le Famiglie...</option>' + fam.map(f => `<option value="${f.nome}">${f.nome}</option>`).join('');
+    document.getElementById('filter-tag').innerHTML = '<option value="">Tutti i Tag...</option>' + tags.map(t => `<option value="${t.nome}">${t.nome}</option>`).join('');
+    document.getElementById('filter-elenco').innerHTML = '<option value="">Tutti gli Elenchi...</option>' + elenchiCache.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+}
+
+async function addParam(route, inputId) {
+    const n = document.getElementById(inputId).value;
+    if(n) { await fetchAPI('/'+route, 'POST', {nome:n}); document.getElementById(inputId).value = ''; refresh(); }
+}
+
+async function deleteComp(id) {
+    if(confirm("Sei sicuro di voler eliminare definitivamente questo componente dal database?")) { await fetchAPI('/componenti/'+id, 'DELETE'); showToast("Componente eliminato"); refresh(); }
+}
+
+async function deleteElenco(id) {
+    if(confirm("Sei sicuro di voler eliminare questa lista esperienza?")) { await fetchAPI('/elenchi/'+id, 'DELETE'); showToast("Lista eliminata"); refresh(); }
+}
+
+async function loadScorte() {
+    const data = await fetchAPI('/scorte'); if(!data) return;
+    const tbody = document.getElementById('dash-scorte-tb');
+    if(data.length === 0) { tbody.innerHTML = "<tr><td class='empty-state'>Tutto in regola. Nessuna scorta critica.</td></tr>"; return; }
+    tbody.innerHTML = data.map(c => `<tr><td><b>${c.nome}</b></td><td><span class="pill low">Giacenza: ${c.quantita} pz</span></td><td style="color:var(--danger); font-weight:800;">Mancanti: ${c.quantita_minima - c.quantita}</td></tr>`).join('');
+}
+
+async function loadUtenti() {
+  const [tutti, attesa] = await Promise.all([fetchAPI('/utenti'), fetchAPI('/utenti/in-attesa')]);
+  const tbAttesa = document.getElementById('tb-attesa');
+  if(attesa && attesa.length > 0) {
+      tbAttesa.innerHTML = attesa.map(u => `<tr><td><b>${u.username}</b><br><span style="font-size:11px; color:var(--text-muted)">${u.email}</span></td><td style="text-align:right;"><button class="btn btn-success btn-sm" onclick="approvaUtente(${u.id})">Approva</button></td></tr>`).join('');
+  } else tbAttesa.innerHTML = `<tr><td colspan="2" class="empty-state">Nessuna richiesta in sospeso da approvare.</td></tr>`;
+  if(tutti) {
+      document.getElementById('tb-utenti').innerHTML = tutti.map(u => `<tr><td><b>${u.username}</b></td><td><span class="pill neutral">${u.ruolo}</span></td><td><span class="pill ${u.approvato?'ok':'low'}">${u.approvato?'Attivo':'Sospeso'}</span></td><td style="text-align:right;"><button style="background:none; border:none; color:var(--danger); cursor:pointer;" onclick="eliminaUtente(${u.id})"><i data-lucide="trash-2" style="width:16px;"></i></button></td></tr>`).join('');
+      lucide.createIcons();
+  }
+}
+
+async function approvaUtente(id) { await fetchAPI('/utenti/'+id+'/approva', 'POST'); showToast("Utente approvato con successo"); loadUtenti(); }
+async function eliminaUtente(id) { if(confirm("Sei sicuro di voler eliminare l'accesso a questo utente?")) { await fetchAPI('/utenti/'+id, 'DELETE'); loadUtenti(); } }
+
+async function salvaUtente() {
+  const b = { username: document.getElementById('u-user').value, email: document.getElementById('u-email').value, password: document.getElementById('u-pwd').value, ruolo: document.getElementById('u-ruolo').value };
+  if(!b.username || !b.password || !b.email) return showToast("Tutti i campi sono obbligatori", "danger");
+  await fetchAPI('/utenti', 'POST', b); closeModal('modal-utente'); showToast('Account Staff Creato con Successo'); loadUtenti();
+}
+
+async function loadLog() {
+  const data = await fetchAPI('/log');
+  if(data) document.getElementById('tb-log').innerHTML = data.map(l => `<tr><td style="font-size:12px; color:var(--text-muted); font-family:var(--font-mono)">${new Date(l.data).toLocaleString()}</td><td><b>${l.username}</b></td><td><span class="pill neutral">${l.azione}</span></td><td>${l.dettagli || '-'}</td></tr>`).join('');
+}
+
+/* ── ANIMAZIONE RESISTENZE ── */
+const resistors = document.querySelectorAll('.resistor-img');
+const itms = [];
+resistors.forEach(el => {
+    let w = 200 + Math.random() * 200;
+    el.style.width = w + 'px';
+    itms.push({ el, x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, vx: (Math.random() > .5 ? 1 : -1) * 0.2, vy: (Math.random() > .5 ? 1 : -1) * 0.2, rot: Math.random() * 360, vrot: (Math.random() - .5) * 0.1, w });
+});
+
+function animateScene() {
+    itms.forEach(i => {
+        i.x += i.vx; i.y += i.vy; i.rot += i.vrot;
+        if(i.x <= -i.w/2) i.vx = Math.abs(i.vx);
+        else if(i.x + i.w/2 >= window.innerWidth) i.vx = -Math.abs(i.vx);
+        if(i.y <= -i.w*0.35/2) i.vy = Math.abs(i.vy);
+        else if(i.y + i.w*0.35/2 >= window.innerHeight) i.vy = -Math.abs(i.vy);
+        i.el.style.transform = `translate3d(${i.x}px,${i.y}px,0) rotate(${i.rot}deg)`;
+    });
+    requestAnimationFrame(animateScene);
+}
+
+animateScene();
+init();
+</script>
+</body>
+</html>
