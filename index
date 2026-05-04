@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FermiStock — Istituto Enrico Fermi</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#f8fafc;
+  --glass:rgba(255,255,255,.55);
+  --glass-strong:rgba(255,255,255,.8);
+  --border:rgba(0,0,0,.08);
+  --blue:#2563eb;
+  --cyan:#0891b2;
+  --indigo:#4f46e5;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:linear-gradient(120deg,#f8fafc,#eef2ff);
+  min-height:100vh;
+  color:var(--text);
+  overflow-x:hidden;
+}
+
+/* animated mesh background */
+.mesh{
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(37,99,235,.12),transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(8,145,178,.12),transparent 40%);
+  z-index:0;
+  animation:meshMove 18s linear infinite alternate;
+}
+
+@keyframes meshMove{
+  from{transform:translateY(-40px)}
+  to{transform:translateY(40px)}
+}
+
+/* ── BACKGROUND CON IMMAGINI RESISTENZE ANIMATE ── */
+.resistor-img {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  opacity: 0.15;
+  will-change: transform;
+  z-index: 1;
+}
+
+nav{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:70px;
+  padding:0 42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  backdrop-filter:blur(18px);
+  background:rgba(255,255,255,.7);
+  border-bottom:1px solid var(--border);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:800;
+  text-decoration:none;
+  color:var(--text);
+}
+
+.brand img{
+  width:36px;
+  height:36px;
+  object-fit:cover;
+  border-radius:8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.brand span{
+  color:var(--blue);
+}
+
+.status{
+  font-size:12px;
+  color:var(--muted);
+  display:flex;
+  gap:6px;
+  align-items:center;
+  font-weight:600;
+}
+
+.dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#10b981;
+  animation:blink 2s infinite;
+}
+
+@keyframes blink{
+  50%{opacity:.4}
+}
+
+.hero{
+  position:relative;
+  z-index:10;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:120px 20px 60px;
+  text-align:center;
+}
+
+.badge{
+  background:var(--glass-strong);
+  border:1px solid rgba(37,99,235,.25);
+  padding:6px 16px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  color:var(--blue);
+  margin-bottom:28px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.title{
+  font-size:clamp(48px,7vw,82px);
+  font-weight:900;
+  letter-spacing:-.04em;
+  line-height: 1.1;
+}
+
+.gradient{
+  background:linear-gradient(90deg,var(--blue),var(--cyan),var(--indigo));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.subtitle{
+  max-width:560px;
+  margin:26px auto 60px;
+  font-size:18px;
+  color:#334155;
+  line-height:1.7;
+  font-weight: 500;
+  background: rgba(255,255,255,0.4);
+  padding: 10px 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:22px;
+  max-width:1000px; /* Allargato per contenere le 3 card sulla stessa riga */
+  width:100%;
+}
+
+.card{
+  backdrop-filter:blur(16px);
+  background:var(--glass);
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:24px;
+  padding:34px;
+  text-decoration:none;
+  color:inherit;
+  transition:.35s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 12px 28px rgba(0,0,0,.06);
+  display:flex;
+  flex-direction:column;
+}
+
+.card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 30px 60px rgba(0,0,0,.12);
+  border-color: rgba(255,255,255,0.9);
+}
+
+.icon{
+  width:56px;
+  height:56px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+}
+
+.icon i { width: 28px; height: 28px; }
+.admin{background:rgba(239, 68, 68, .12); color: #ef4444;}
+.staff{background:rgba(16, 185, 129, .12); color: #10b981;}
+.prof{background:rgba(37, 99, 235, .12); color: var(--blue);}
+
+.card h3{
+  font-size:22px;
+  font-weight: 800;
+  margin-bottom:10px;
+  letter-spacing: -0.5px;
+}
+
+.card p{
+  font-size:14px;
+  color:#475569;
+  margin-bottom:32px;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.cta{
+  display:flex;
+  justify-content:center;
+  padding:14px;
+  border-radius:14px;
+  font-weight:800;
+  font-size:14px;
+  color:white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+
+.adminBtn{background:linear-gradient(135deg, #ef4444, #b91c1c);}
+.staffBtn{background:linear-gradient(135deg, #10b981, #047857);}
+.profBtn{background:linear-gradient(135deg,var(--blue),var(--indigo));}
+
+.card:hover .cta { box-shadow: 0 8px 20px rgba(0,0,0,0.2); transform: translateY(-2px); }
+
+.features{
+  position:relative;
+  z-index:10;
+  backdrop-filter:blur(24px);
+  background:rgba(255,255,255,.45);
+  padding:90px 40px;
+  border-top: 1px solid rgba(255,255,255,0.6);
+}
+
+.featuresGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:24px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.feature{
+  background:rgba(255,255,255,.65);
+  padding:32px 26px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.8);
+  transition: 0.3s;
+}
+
+.feature:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+}
+
+.feature i { color: var(--blue); margin-bottom: 16px; width: 32px; height: 32px; }
+.feature h4{ margin:0 0 8px; font-size: 18px; font-weight: 800; letter-spacing: -0.5px;}
+.feature p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+footer{
+  position:relative;
+  z-index:10;
+  backdrop-filter:blur(24px);
+  background:rgba(255,255,255,.55);
+  border-top:1px solid rgba(255,255,255,.7);
+  padding:32px 40px;
+  display:flex;
+  justify-content:space-between;
+  align-items: center;
+  flex-wrap:wrap;
+  gap:16px;
+  font-weight: 500;
+}
+
+.footer-brand { display:flex; align-items:center; gap:8px; font-weight:800; }
+.footer-brand img { width:20px; height:20px; border-radius:4px; object-fit:cover; }
+
+footer a{
+  text-decoration:none;
+  color:#64748b;
+  transition: 0.2s;
+  font-weight: 600;
+  margin-left: 16px;
+}
+
+footer a:hover{
+  color:var(--blue);
+}
+
+@media(max-width:640px){
+  nav{padding:0 20px}
+  footer{flex-direction:column;text-align:center; justify-content:center;}
+  footer a { margin: 0 8px; }
+  .title { font-size: 40px; }
+}
+  *
+</style>
+</head>
+
+<body>
+
+<div class="mesh" id="scene">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+  <img src="resistenza.jpg" alt="" class="resistor-img">
+</div>
+
+<nav>
+  <a class="brand" href="index.html">
+    <img src="logo.jpg" alt="Logo">
+    Fermi<span>Stock</span>
+  </a>
+
+  <div class="status">
+    <div class="dot"></div>
+    Sistema operativo
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="badge">ISTITUTO ENRICO FERMI</div>
+
+  <div class="title">
+    Gestione Magazzino
+    <div class="gradient">Laboratorio Elettronica</div>
+  </div>
+
+  <p class="subtitle">
+    Sistema intelligente per la gestione centralizzata dell'inventario del laboratorio con accessi sicuri per amministrazione, staff tecnico e docenti.
+  </p>
+
+  <div class="cards">
+    <a class="card" href="login-staff.html">
+      <div class="icon admin">
+        <i data-lucide="shield"></i>
+      </div>
+      <h3>Portale Admin</h3>
+      <p>
+        Controllo totale del sistema, gestione dei privilegi, approvazione utenti e audit log generale.
+      </p>
+      <div class="cta adminBtn">
+        Accedi come Admin
+      </div>
+    </a>
+
+    <a class="card" href="login-tecnico.html">
+      <div class="icon staff">
+        <i data-lucide="wrench"></i>
+      </div>
+      <h3>Portale Tecnico</h3>
+      <p>
+        Gestione completa dell'inventario, classificazione, liste acquisti e movimenti di magazzino.
+      </p>
+      <div class="cta staffBtn">
+        Accedi come Tecnico
+      </div>
+    </a>
+
+    <a class="card" href="login-prof.html">
+      <div class="icon prof">
+        <i data-lucide="graduation-cap"></i>
+      </div>
+      <h3>Portale Docenti</h3>
+      <p>
+        Consultazione del catalogo componenti in tempo reale e creazione di liste per le attività didattiche.
+      </p>
+      <div class="cta profBtn">
+        Accedi come Docente
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="featuresGrid">
+    <div class="feature">
+      <i data-lucide="boxes"></i>
+      <h4>Inventario in tempo reale</h4>
+      <p>Monitoraggio continuo quantità e disponibilità. Alert automatici per scorte critiche sotto la soglia.</p>
+    </div>
+
+    <div class="feature">
+      <i data-lucide="arrow-right-left"></i>
+      <h4>Movimenti tracciati</h4>
+      <p>Storico completo e inalterabile dei carichi e scarichi merce, con utente e timestamp associati.</p>
+    </div>
+
+    <div class="feature">
+      <i data-lucide="clipboard-list"></i>
+      <h4>Liste esperienze</h4>
+      <p>Preparazione rapida dei materiali. Il sistema verifica automaticamente se i pezzi sono disponibili.</p>
+    </div>
+
+    <div class="feature">
+      <i data-lucide="shield-check"></i>
+      <h4>Accessi sicuri</h4>
+      <p>Separazione netta dei ruoli. I docenti si registrano e attendono l'approvazione formale dello Staff.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">
+    <img src="logo.jpg" alt="Logo">
+    FermiStock
+  </div>
+
+  <div>
+    <a href="login-staff.html">Area Admin</a>
+    <a href="login-tecnico.html">Area Tecnici</a>
+    <a href="login-prof.html">Area Docenti</a>
+    <a href="register.html">Richiedi Accesso</a>
+  </div>
+</footer>
+
+<script>
+// Redirect se già loggato
+if(localStorage.getItem("token")){
+  window.location.href="dashboard.html";
+}
+
+// Inizializza Icone Lucide
+lucide.createIcons();
+
+// Animazione Background Resistenze
+const resistors = document.querySelectorAll('.resistor-img');
+const items = [];
+
+resistors.forEach((el, index) => {
+  // Grandezze "giganti" casuali tra 350px e 650px
+  let width = 350 + Math.random() * 300;
+  let height = width * 0.35;
+
+  el.style.width = width + 'px';
+  el.style.filter = `hue-rotate(${index * 45}deg)`; // Colori diversi
+
+  items.push({
+    el: el,
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.6),
+    vy: (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.6),
+    rot: Math.random() * 360,
+    vrot: (Math.random() - 0.5) * 0.4,
+    w: width,
+    h: height
+  });
+});
+
+function animate() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+
+  items.forEach(item => {
+    item.x += item.vx;
+    item.y += item.vy;
+    item.rot += item.vrot;
+
+    // Rimbalzo fuori schermo
+    if (item.x <= -item.w / 2) {
+      item.vx = Math.abs(item.vx);
+    } else if (item.x + item.w / 2 >= W) {
+      item.vx = -Math.abs(item.vx);
+    }
+
+    if (item.y <= -item.h / 2) {
+      item.vy = Math.abs(item.vy);
+    } else if (item.y + item.h / 2 >= H) {
+      item.vy = -Math.abs(item.vy);
+    }
+
+    item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.rot}deg)`;
+  });
+
+  requestAnimationFrame(animate);
+}
+
+// Avvia animazione resistenze
+animate();
+</script>
+
+</body>
+</html>
